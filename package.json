@@ -1,11 +1,12 @@
 {
   "name": "booking-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "A cinema seat booking system built with Node.js, Express, and PostgreSQL. Supports JWT-based authentication and concurrent-safe seat booking using database transactions.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "node .\\index.mjs"
+    "start": "node --env-file=.env index.mjs",
+    "dev": "node --env-file=.env --watch index.mjs"
   },
   "keywords": [],
   "author": "",
