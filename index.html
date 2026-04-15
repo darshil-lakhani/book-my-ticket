@@ -73,73 +73,108 @@
       .ticket-edge::after  { right: -10px; }
 
       input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+      @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+      .auth-booking-row:not(:last-child) { border-bottom: 1px solid #2e2e2e; }
     </style>
   </head>
 
   <body class="min-h-screen">
 
     <!-- ═══════════════════ AUTH PAGE ═══════════════════ -->
-    <div id="page-auth" class="min-h-screen flex items-center justify-center p-4" style="background:#1C1C1C;">
-      <div class="w-full max-w-sm" style="background:#2b2b2b; border-radius:12px; overflow:hidden;">
+    <div id="page-auth" class="min-h-screen flex flex-col" style="background:#1C1C1C;">
 
-        <!-- Header -->
-        <div class="p-6 text-center" style="background:#242424; border-bottom:1px solid #333;">
-          <div class="text-3xl font-black tracking-tight" style="color:#F84464;">bookmy<span style="color:#fff;">ticket</span></div>
-          <p class="text-xs mt-1" style="color:#888;">Movies · Events · Seats</p>
+      <!-- Top bar -->
+      <div class="px-6 py-4 flex items-center" style="border-bottom:1px solid #2a2a2a;">
+        <div class="text-2xl font-black tracking-tight"><span style="color:#F84464;">bookmy</span><span style="color:#fff;">ticket</span></div>
+      </div>
+
+      <div class="flex-1 flex flex-col lg:flex-row items-center justify-center gap-10 px-4 py-10 max-w-5xl mx-auto w-full">
+
+        <!-- LEFT: Social proof -->
+        <div class="w-full lg:w-1/2 max-w-md">
+          <h1 class="text-3xl font-black leading-tight mb-2">
+            Your friends already<br/>booked their seats. <span style="color:#F84464;">👀</span>
+          </h1>
+          <p class="text-sm mb-6" style="color:#888;">You're still here reading this. They're eating popcorn.</p>
+
+          <!-- Live activity feed -->
+          <div class="rounded-xl overflow-hidden" style="background:#242424; border:1px solid #2e2e2e;">
+            <div class="px-4 py-3 flex items-center gap-2" style="border-bottom:1px solid #2e2e2e;">
+              <span class="w-2 h-2 rounded-full animate-pulse" style="background:#F84464;"></span>
+              <span class="text-xs font-bold" style="color:#aaa;">LIVE — RECENT BOOKINGS</span>
+            </div>
+            <div id="auth-recent-bookings" class="divide-y" style="border-color:#2e2e2e;">
+              <!-- filled by JS -->
+              <div class="px-4 py-3 text-xs" style="color:#555;">Loading live activity…</div>
+            </div>
+          </div>
+
+          <p class="text-xs mt-4 text-center" style="color:#555;">
+            🍿 Seats are filling up faster than your excuses. Just saying.
+          </p>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex" style="border-bottom:1px solid #333;">
-          <button onclick="switchAuthTab('login')" id="tab-login"
-            class="flex-1 py-3 text-sm font-bold transition-colors"
-            style="color:#F84464; border-bottom:2px solid #F84464;">Login</button>
-          <button onclick="switchAuthTab('register')" id="tab-register"
-            class="flex-1 py-3 text-sm font-bold transition-colors"
-            style="color:#888; border-bottom:2px solid transparent;">Register</button>
+        <!-- RIGHT: Login / Register form -->
+        <div class="w-full lg:w-auto" style="min-width:320px; max-width:360px;">
+          <div style="background:#2b2b2b; border-radius:12px; overflow:hidden; border:1px solid #333;">
+
+            <!-- Tabs -->
+            <div class="flex" style="border-bottom:1px solid #333;">
+              <button onclick="switchAuthTab('login')" id="tab-login"
+                class="flex-1 py-3 text-sm font-bold transition-colors"
+                style="color:#F84464; border-bottom:2px solid #F84464;">Login</button>
+              <button onclick="switchAuthTab('register')" id="tab-register"
+                class="flex-1 py-3 text-sm font-bold transition-colors"
+                style="color:#888; border-bottom:2px solid transparent;">Register</button>
+            </div>
+
+            <!-- Login -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="p-6 space-y-4">
+              <div>
+                <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">USERNAME</label>
+                <input id="login-username" type="text" placeholder="Enter username" autocomplete="username"
+                  class="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
+                  style="background:#1C1C1C; border:1px solid #444; color:#fff;"
+                  onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
+              </div>
+              <div>
+                <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">PASSWORD</label>
+                <input id="login-password" type="password" placeholder="Enter password" autocomplete="current-password"
+                  class="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
+                  style="background:#1C1C1C; border:1px solid #444; color:#fff;"
+                  onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
+              </div>
+              <p id="login-error" class="text-xs hidden" style="color:#F84464;"></p>
+              <button type="submit" class="w-full py-3 rounded-lg font-bold text-sm text-white transition-opacity hover:opacity-90"
+                style="background:#F84464;">Login & Grab Seats →</button>
+            </form>
+
+            <!-- Register -->
+            <form id="form-register" onsubmit="handleRegister(event)" class="p-6 space-y-4 hidden">
+              <div>
+                <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">USERNAME</label>
+                <input id="reg-username" type="text" placeholder="Choose a username" autocomplete="username"
+                  class="w-full px-4 py-3 rounded-lg text-sm outline-none"
+                  style="background:#1C1C1C; border:1px solid #444; color:#fff;"
+                  onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
+              </div>
+              <div>
+                <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">PASSWORD</label>
+                <input id="reg-password" type="password" placeholder="Min. 6 characters" autocomplete="new-password"
+                  class="w-full px-4 py-3 rounded-lg text-sm outline-none"
+                  style="background:#1C1C1C; border:1px solid #444; color:#fff;"
+                  onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
+              </div>
+              <p id="reg-error" class="text-xs hidden" style="color:#F84464;"></p>
+              <p id="reg-success" class="text-xs hidden" style="color:#4CAF50;"></p>
+              <button type="submit" class="w-full py-3 rounded-lg font-bold text-sm text-white hover:opacity-90"
+                style="background:#F84464;">Join the Fun →</button>
+            </form>
+
+          </div>
+          <p class="text-xs text-center mt-3" style="color:#555;">Stop watching from the sidelines. 🎬</p>
         </div>
 
-        <!-- Login -->
-        <form id="form-login" onsubmit="handleLogin(event)" class="p-6 space-y-4">
-          <div>
-            <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">USERNAME</label>
-            <input id="login-username" type="text" placeholder="Enter username" autocomplete="username"
-              class="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
-              style="background:#1C1C1C; border:1px solid #444; color:#fff;"
-              onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
-          </div>
-          <div>
-            <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">PASSWORD</label>
-            <input id="login-password" type="password" placeholder="Enter password" autocomplete="current-password"
-              class="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all"
-              style="background:#1C1C1C; border:1px solid #444; color:#fff;"
-              onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
-          </div>
-          <p id="login-error" class="text-xs hidden" style="color:#F84464;"></p>
-          <button type="submit" class="w-full py-3 rounded-lg font-bold text-sm text-white transition-opacity hover:opacity-90"
-            style="background:#F84464;">Login</button>
-        </form>
-
-        <!-- Register -->
-        <form id="form-register" onsubmit="handleRegister(event)" class="p-6 space-y-4 hidden">
-          <div>
-            <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">USERNAME</label>
-            <input id="reg-username" type="text" placeholder="Choose a username" autocomplete="username"
-              class="w-full px-4 py-3 rounded-lg text-sm outline-none"
-              style="background:#1C1C1C; border:1px solid #444; color:#fff;"
-              onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
-          </div>
-          <div>
-            <label class="block text-xs mb-1.5 font-semibold" style="color:#aaa;">PASSWORD</label>
-            <input id="reg-password" type="password" placeholder="Min. 6 characters" autocomplete="new-password"
-              class="w-full px-4 py-3 rounded-lg text-sm outline-none"
-              style="background:#1C1C1C; border:1px solid #444; color:#fff;"
-              onfocus="this.style.borderColor='#F84464'" onblur="this.style.borderColor='#444'" />
-          </div>
-          <p id="reg-error" class="text-xs hidden" style="color:#F84464;"></p>
-          <p id="reg-success" class="text-xs hidden" style="color:#4CAF50;"></p>
-          <button type="submit" class="w-full py-3 rounded-lg font-bold text-sm text-white hover:opacity-90"
-            style="background:#F84464;">Create Account</button>
-        </form>
       </div>
     </div>
 
@@ -179,9 +214,24 @@
 
         <!-- ═══ CINEMAS PAGE ═══ -->
         <div id="page-cinemas" class="hidden fade max-w-5xl mx-auto px-4 py-8">
+
+          <!-- Recent bookings ticker -->
+          <div class="rounded-xl px-4 py-3 mb-7 flex items-center gap-3 overflow-hidden" style="background:#242424; border:1px solid #2e2e2e;">
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <span class="w-2 h-2 rounded-full animate-pulse" style="background:#F84464;"></span>
+              <span class="text-xs font-black" style="color:#F84464;">LIVE</span>
+            </div>
+            <div class="overflow-hidden flex-1" style="mask-image:linear-gradient(to right, transparent, black 5%, black 95%, transparent);">
+              <div id="cinemas-ticker" class="flex gap-8 text-xs font-semibold whitespace-nowrap" style="color:#aaa; animation: ticker 28s linear infinite;">
+                <span style="color:#555;">Loading activity…</span>
+              </div>
+            </div>
+            <span class="text-xs flex-shrink-0" style="color:#555;">Seats going fast 🔥</span>
+          </div>
+
           <div class="mb-6">
             <h2 class="text-xl font-black">Cinemas</h2>
-            <p class="text-sm mt-0.5" style="color:#777;">Select a cinema to browse movies & shows</p>
+            <p class="text-sm mt-0.5" style="color:#777;">Select a cinema to browse movies &amp; shows</p>
           </div>
           <div id="cinemas-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </div>
@@ -454,7 +504,7 @@
       }
       async function navigate(page) {
         try {
-          if      (page==="cinemas")     await loadCinemas();
+          if      (page==="cinemas")     { await loadCinemas(); loadRecentBookings(); }
           else if (page==="shows")       await loadShows();
           else if (page==="seats")       await loadSeats();
           else if (page==="my-bookings") await loadMyBookings();
@@ -743,6 +793,7 @@
 
           state.selectedSeats = [];
           showPage("confirmation");
+          loadRecentBookings(); // refresh ticker so this booking appears
         } catch (err) {
           alert("Booking failed: " + err.message);
           btn.disabled = false; btn.textContent = "Book Tickets";
@@ -856,6 +907,73 @@
         setTimeout(() => el.classList.add("hidden"), 4000);
       }
 
+      // ── RECENT BOOKINGS (social proof) ──
+      const funnyLines = [
+        "while you're deciding, {user} just snagged {n} seat(s) for {movie} 🍿",
+        "{user} didn't overthink it. Booked {movie}. Living the dream. 🎬",
+        "breaking news: {user} is watching {movie} tonight. you're not. yet. 📰",
+        "{user} just grabbed {n} seat(s) for {movie}. no regrets. only popcorn. 🎭",
+        "{user} booked {movie}. their couch misses them already. 🛋️",
+      ];
+
+      function formatRecentLine(b, idx) {
+        const template = funnyLines[idx % funnyLines.length];
+        return template
+          .replace("{user}", `<strong style="color:#fff;">${b.username}</strong>`)
+          .replace("{n}", b.seat_count)
+          .replace("{movie}", `<strong style="color:#F84464;">${b.movie_title}</strong>`);
+      }
+
+      function timeAgo(ts) {
+        const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+        if (diff < 60)  return diff + "s ago";
+        if (diff < 3600) return Math.floor(diff/60) + "m ago";
+        return Math.floor(diff/3600) + "h ago";
+      }
+
+      async function loadRecentBookings() {
+        try {
+          const bookings = await fetch("/recent-bookings").then(r => r.json());
+
+          // ── Auth page feed ──
+          const authEl = document.getElementById("auth-recent-bookings");
+          if (authEl) {
+            if (!bookings.length) {
+              authEl.innerHTML = `<div class="px-4 py-4 text-xs text-center" style="color:#555;">
+                No bookings yet — be the legendary first one. 🏆</div>`;
+            } else {
+              authEl.innerHTML = bookings.map((b, i) => `
+                <div class="auth-booking-row px-4 py-3 flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-black"
+                    style="background:#2e2e2e;">${b.username[0].toUpperCase()}</div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs leading-snug" style="color:#bbb;">${formatRecentLine(b, i)}</p>
+                    <p class="text-xs mt-0.5" style="color:#555;">${b.cinema_name} · ${b.show_time} · ${timeAgo(b.created_at)}</p>
+                  </div>
+                </div>`).join("");
+            }
+          }
+
+          // ── Cinemas page ticker ──
+          const tickerEl = document.getElementById("cinemas-ticker");
+          if (tickerEl) {
+            if (!bookings.length) {
+              tickerEl.textContent = "No recent bookings yet — yours could be first 🏆";
+              tickerEl.style.animation = "none";
+            } else {
+              const items = bookings.map(b =>
+                `<span>${b.username} booked <strong style="color:#fff;">${b.movie_title}</strong> at ${b.cinema_name} · ${b.show_time} <span style="color:#555;">· ${timeAgo(b.created_at)}</span></span>`
+              );
+              // Duplicate for seamless loop
+              const all = [...items, ...items].join(
+                '<span style="color:#333; margin:0 4px;">|</span>'
+              );
+              tickerEl.innerHTML = all;
+            }
+          }
+        } catch { /* silently ignore */ }
+      }
+
       // ── INIT ──
       function initApp() {
         document.getElementById("page-auth").classList.add("hidden");
@@ -868,7 +986,7 @@
       }
 
       if (state.token && state.user) initApp();
-      else switchAuthTab("login");
+      else { switchAuthTab("login"); loadRecentBookings(); }
     </script>
   </body>
 </html>

@@ -179,6 +179,31 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Public: last 5 bookings for social proof (username masked)
+app.get("/recent-bookings", async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT b.created_at, u.username, m.title AS movie_title,
+              c.name AS cinema_name, TO_CHAR(s.show_time, 'HH24:MI') AS show_time,
+              COUNT(bs.id) AS seat_count
+       FROM bookings b
+       JOIN users u ON u.id = b.user_id
+       JOIN shows s ON s.id = b.show_id
+       JOIN movies m ON m.id = s.movie_id
+       JOIN cinemas c ON c.id = s.cinema_id
+       JOIN booking_seats bs ON bs.booking_id = b.id
+       GROUP BY b.id, u.username, m.title, c.name, s.show_time
+       ORDER BY b.created_at DESC
+       LIMIT 5`
+    );
+    const mask = (name) =>
+      name.length <= 2 ? name[0] + "*" : name[0] + "***" + name[name.length - 1];
+    res.json(result.rows.map((r) => ({ ...r, username: mask(r.username) })));
+  } catch {
+    res.json([]);
+  }
+});
+
 app.get("/me", authMiddleware, async (req, res) => {
   const result = await pool.query("SELECT id, username, role FROM users WHERE id = $1", [
     req.user.id,
